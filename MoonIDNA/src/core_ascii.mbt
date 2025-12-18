@@ -17,11 +17,8 @@ pub fn to_ascii_core(
       continue
     }
 
-    // 先做基础映射（ASCII 大写 -> 小写）
     let mapped = map_label(raw_lbl, opts)
     let lbl = mapped.value
-    // 映射阶段产生的错误目前忽略（后续接入 UTS #46 完整表再用）
-    // 现在只用 validate 层
     let label_errs = validate_label_all(lbl, opts)
     // 聚合错误
     let mut j = 0
@@ -39,7 +36,6 @@ pub fn to_ascii_core(
           s
         }
         Err(_) =>
-          // 暂时策略：编码失败就保留映射后的 label
           lbl.to_string()
       }
       out_labels.push(ascii_label)
@@ -59,7 +55,6 @@ pub fn to_ascii_core(
     k += 1
   }
 
-  // 暂时：无论是否有错误都返回 Ok(result)，错误列表先不对外暴露
   let _ = all_errs
   Ok(result)
 }

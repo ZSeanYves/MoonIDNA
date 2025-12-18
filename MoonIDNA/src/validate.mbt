@@ -14,7 +14,7 @@ pub fn check_std3(label : String, opts : IdnaOptions) -> IdnaErrorList {
     if b < 0 || b > 0x7F {
       errs.push(IdnaError::InvalidCharacter)
     } else {
-      // STD3: 只允许 a-z, 0-9, '-'（我们已在 mapping 中做了大小写折叠）
+      // STD3: 只允许 a-z, 0-9, '-'
       let is_digit = (b >= 0x30 && b <= 0x39)
       let is_lower = (b >= 0x61 && b <= 0x7A)
       let is_hyphen = (b == 0x2D)

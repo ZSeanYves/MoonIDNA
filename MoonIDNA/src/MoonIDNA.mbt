@@ -33,7 +33,6 @@ pub fn to_ascii_with_options(domain : StringView, opts : IdnaOptions) -> String 
     Ok(s) => s
     Err(_) =>
       // UTS #46 ToASCII 允许实现选择抛错或返回原字符串；
-      // 这里先简单返回原字符串，之后我们可以再细化策略。
       domain.to_string()
   }
 }

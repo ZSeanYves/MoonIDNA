@@ -82,7 +82,6 @@ pub fn map_label(label : String, opts : IdnaOptions) -> MappedLabel {
         }
       MappingStatus::Disallowed => {
         errs.push(IdnaError::InvalidCharacter)
-        // 当前策略：仍然保留原字符，以避免改变现有行为
         out_chars.push(c)
       }
       MappingStatus::DisallowedStd3Valid => {
