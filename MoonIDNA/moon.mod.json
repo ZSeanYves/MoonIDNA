@@ -1,6 +1,9 @@
 {
   "name": "ZSeanYves/MoonIDNA",
   "version": "0.1.0",
+  "deps": {
+    "ZSeanYves/bufferutils": "0.2.4"
+  },
   "readme": "README.mbt.md",
   "repository": "",
   "license": "Apache-2.0",

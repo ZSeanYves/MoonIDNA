@@ -1,0 +1,8 @@
+{
+    "import": [
+        {
+            "path": "ZSeanYves/bufferutils",  
+            "alias": "buf"
+        }
+    ]
+}
