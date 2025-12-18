@@ -1,9 +1,0 @@
-{
-    "import":[
-      {
-        "path": "ZSeanYves/MoonIDNA/idna",
-        "alias": "idna"
-      },
-      "username/MoonIDNA/src/idna"
-    ]
-}
