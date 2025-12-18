@@ -30,7 +30,7 @@ pub fn check_std3(label : String, opts : IdnaOptions) -> IdnaErrorList {
 
 // --- 连字符规则检查（_check_hyphens） ---
 ///|
-pub fn _check_hyphens(label : String, opts : IdnaOptions) -> IdnaErrorList {
+pub fn check_hyphens(label : String, opts : IdnaOptions) -> IdnaErrorList {
   let errs : IdnaErrorList = []
   if !opts._check_hyphens {
     return errs
@@ -109,8 +109,53 @@ pub fn check_dns_length(domain : String, opts : IdnaOptions) -> IdnaErrorList {
 
   errs
 }
+// --- 单个 label 的 Bidi 检查封装 ---
+///|
+fn check_bidi(label : String, opts : IdnaOptions) -> IdnaErrorList {
+  let errs : IdnaErrorList = []
+  if !opts._check_bidi {
+    return errs
+  }
 
-// --- 聚合：单个 label 的全部检查 ---
+  // 空 label（前导/连续点）不参与 Bidi 规则
+  if label.length() == 0 {
+    return errs
+  }
+
+  let ok = check_bidi_label(label)
+  if !ok {
+    errs.push(IdnaError::BidiError)
+  }
+  errs
+}
+
+// --- 单个 joiners 的 Bidi 检查封装 ---
+///|
+fn check_joiners(label : String, opts : IdnaOptions) -> IdnaErrorList {
+  let errs : IdnaErrorList = []
+
+  if !opts._check_joiners {
+    return errs
+  }
+
+  if label.length() == 0 {
+    return errs
+  }
+
+  let chars = label.to_array()
+  let cps : Array[Int] = []
+  let mut i = 0
+  while i < chars.length() {
+    cps.push(chars[i].to_int())
+    i += 1
+  }
+
+  if !contextj_valid(cps) {
+    errs.push(IdnaError::JoinerError)
+  }
+  errs
+}
+
 ///|
 pub fn validate_label_all(label : String, opts : IdnaOptions) -> IdnaErrorList {
   let all : IdnaErrorList = []
@@ -122,17 +167,30 @@ pub fn validate_label_all(label : String, opts : IdnaOptions) -> IdnaErrorList {
     i += 1
   }
 
-  let e2 = _check_hyphens(label, opts)
+  let e2 = check_hyphens(label, opts)
   let mut j = 0
   while j < e2.length() {
     all.push(e2[j])
     j += 1
   }
 
+  let e3 = check_bidi(label, opts)
+  let mut k = 0
+  while k < e3.length() {
+    all.push(e3[k])
+    k += 1
+  }
+
+  let e4 = check_joiners(label, opts)
+  let mut m = 0
+  while m < e4.length() {
+    all.push(e4[m])
+    m += 1
+  }
+
   all
 }
 
-// --- 聚合：整个域名的 DNS 长度检查 ---
 ///|
 pub fn validate_domain_all(domain : String, opts : IdnaOptions) -> IdnaErrorList {
   let all : IdnaErrorList = []
@@ -146,3 +204,4 @@ pub fn validate_domain_all(domain : String, opts : IdnaOptions) -> IdnaErrorList
 
   all
 }
+

@@ -1,0 +1,163 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "ZSeanYves/MoonIDNA/src"
+
+import(
+  "ZSeanYves/bufferutils"
+)
+
+// Values
+pub let bidi_table : Array[BidiEntry]
+
+pub fn check_bidi_domain(Array[String]) -> Array[IdnaError]
+
+pub fn check_dns_length(String, IdnaOptions) -> Array[IdnaError]
+
+pub fn check_hyphens(String, IdnaOptions) -> Array[IdnaError]
+
+pub fn check_std3(String, IdnaOptions) -> Array[IdnaError]
+
+pub fn decode(StringView) -> Result[String, PunycodeError] raise @bufferutils.Utf8DecodeError
+
+pub fn encode(StringView) -> Result[String, PunycodeError] raise @bufferutils.Utf8DecodeError
+
+pub fn is_virama(Int) -> Bool
+
+pub let joining_table : Array[JoiningEntry]
+
+pub fn joining_type_of(Int) -> JoiningType
+
+pub fn map_label(String, IdnaOptions) -> MappedLabel
+
+pub let mapping_table : Array[MappingEntry]
+
+pub fn options_default() -> IdnaOptions
+
+pub fn options_strict_registration() -> IdnaOptions
+
+pub fn options_transitional() -> IdnaOptions
+
+pub fn to_ascii(StringView) -> String raise @bufferutils.Utf8DecodeError
+
+pub fn to_ascii_core(StringView, IdnaOptions) -> Result[String, Array[IdnaError]] raise @bufferutils.Utf8DecodeError
+
+pub fn to_ascii_transitional(StringView) -> String raise @bufferutils.Utf8DecodeError
+
+pub fn to_ascii_with_options(StringView, IdnaOptions) -> String raise @bufferutils.Utf8DecodeError
+
+pub fn to_unicode(StringView) -> String raise @bufferutils.Utf8DecodeError
+
+pub fn to_unicode_core(StringView, IdnaOptions) -> Result[String, Array[IdnaError]] raise @bufferutils.Utf8DecodeError
+
+pub fn to_unicode_transitional(StringView) -> String raise @bufferutils.Utf8DecodeError
+
+pub fn to_unicode_with_options(StringView, IdnaOptions) -> String raise @bufferutils.Utf8DecodeError
+
+pub fn validate_domain_all(String, IdnaOptions) -> Array[IdnaError]
+
+pub fn validate_label_all(String, IdnaOptions) -> Array[IdnaError]
+
+pub let virama_table : Array[Int]
+
+// Errors
+
+// Types and methods
+pub enum BidiClass {
+  L
+  R
+  AL
+  EN
+  ES
+  ET
+  AN
+  CS
+  NSM
+  BN
+  ON
+  LRE
+  LRO
+  RLE
+  RLO
+  PDF
+  LRI
+  RLI
+  FSI
+  PDI
+  S
+  WS
+  B
+}
+
+pub struct BidiEntry {
+  start : Int
+  end : Int
+  class : BidiClass
+}
+
+pub enum IdnaError {
+  InvalidCharacter
+  InvalidHyphenPosition
+  InvalidPunycode
+  BidiError
+  JoinerError
+  LabelTooLong
+  DomainTooLong
+}
+
+pub(all) struct IdnaOptions {
+  mut _check_hyphens : Bool
+  mut _check_bidi : Bool
+  mut _check_joiners : Bool
+  mut _use_std3_ascii_rules : Bool
+  mut _transitional_processing : Bool
+  mut _verify_dns_length : Bool
+  mut _ignore_invalid_punycode : Bool
+}
+
+pub struct JoiningEntry {
+  start : Int
+  end : Int
+  class : JoiningType
+}
+
+pub enum JoiningType {
+  U
+  L
+  R
+  D
+  T
+  C
+}
+
+pub struct MappedLabel {
+  value : String
+  errors : Array[IdnaError]
+}
+
+pub struct MappingEntry {
+  start : Int
+  end : Int
+  status : MappingStatus
+  mapping : Array[Int]
+}
+
+pub enum MappingStatus {
+  Valid
+  Ignored
+  Mapped
+  Deviation
+  Disallowed
+  DisallowedStd3Valid
+  DisallowedStd3Mapped
+}
+
+pub enum PunycodeError {
+  InvalidInput
+  Overflow
+  InvalidUtf8
+}
+
+// Type aliases
+pub type IdnaErrorList = Array[IdnaError]
+
+// Traits
+

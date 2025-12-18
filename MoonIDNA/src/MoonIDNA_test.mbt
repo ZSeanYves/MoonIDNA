@@ -115,3 +115,117 @@ test "idna: top-level api basic" {
   assert_eq(ascii, "xn--bcher-kva.example")
   assert_eq(uni, "bücher.example")
 }
+
+
+///|
+test "idna: ascii trailing dot preserved" {
+  let input = "example.com."
+  let opts = options_default()
+
+  let out_ascii = to_ascii_with_options(input, opts)
+  let out_unicode = to_unicode_with_options(out_ascii, opts)
+
+  assert_eq(out_ascii, "example.com.")
+  assert_eq(out_unicode, "example.com.")
+}
+
+///|
+test "idna: non-ascii trailing dot preserved" {
+  let input = "bücher.example."
+  let opts = options_default()
+
+  let out_ascii = to_ascii_with_options(input, opts)
+  let out_unicode = to_unicode_with_options(out_ascii, opts)
+
+  assert_eq(out_ascii, "xn--bcher-kva.example.")
+  assert_eq(out_unicode, "bücher.example.")
+}
+
+///|
+test "idna: leading dot preserved ascii" {
+  let input = ".example.com"
+  let opts = options_default()
+
+  let out_ascii = to_ascii_with_options(input, opts)
+  let out_unicode = to_unicode_with_options(out_ascii, opts)
+
+  assert_eq(out_ascii, ".example.com")
+  assert_eq(out_unicode, ".example.com")
+}
+
+///|
+test "idna: leading dot preserved idn" {
+  let input = ".bücher.example"
+  let opts = options_default()
+
+  let out_ascii = to_ascii_with_options(input, opts)
+  let out_unicode = to_unicode_with_options(out_ascii, opts)
+
+  assert_eq(out_ascii, ".xn--bcher-kva.example")
+  assert_eq(out_unicode, ".bücher.example")
+}
+
+///|
+test "idna: mixed labels roundtrip" {
+  let input = "www.bücher.example"
+  let opts = options_default()
+
+  let out_ascii = to_ascii_with_options(input, opts)
+  let out_unicode = to_unicode_with_options(out_ascii, opts)
+
+  assert_eq(out_unicode, input.to_string())
+}
+
+///|
+test "idna: punycode prefix case-insensitive" {
+  let opts = options_default()
+
+  let lower = to_unicode_with_options("xn--bcher-kva.example", opts)
+  let upper = to_unicode_with_options("XN--BCHER-KVA.EXAMPLE", opts)
+
+  assert_eq(lower, "bücher.example")
+  // ASCII 部分会被统一小写，punycode 前缀大小写不敏感
+  assert_eq(upper, "bücher.example")
+}
+
+///|
+test "punycode: encode ascii-only label unchanged" {
+  let s = "example"
+  let enc = match encode(s) {
+    Ok(v) => v
+    Err(_) => {
+      let a = true
+      assert_eq(a, false)
+      "".to_string()
+    }
+  }
+  assert_eq(enc, "example")
+}
+
+///|
+test "punycode: encode empty label" {
+  let s = ""
+  let enc = match encode(s) {
+    Ok(v) => v
+    Err(_) => {
+      let a = true
+      assert_eq(a, false)
+      "".to_string()
+    }
+  }
+  assert_eq(enc, "")
+}
+
+///|
+test "punycode: decode empty label" {
+  let enc = ""
+  let dec = match decode(enc) {
+    Ok(v) => v
+    Err(_) => {
+      let a = true
+      assert_eq(a, false)
+      "".to_string()
+    }
+  }
+  assert_eq(dec, "")
+}
