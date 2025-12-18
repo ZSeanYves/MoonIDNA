@@ -254,9 +254,15 @@ ZSeanYves/MoonIDNA
   │   └─ gen_joining_table.py
   └─ src/
       ├─ MoonIDNA.mbt            # public idna package facade
+      ├─ error.mbt
+      ├─ tool.mbt
+      ├─ core_ascii.mbt        
+      ├─ core_unicode.mbt
       ├─ mapping.mbt             # generated mapping table
       ├─ bidi_table.mbt          # generated bidi table
+      ├─ bidi.mbt
       ├─ joining_table.mbt       # generated joining / virama table
+      ├─ joiners.mbt
       ├─ punycode.mbt            # core Punycode implementation
       ├─ validate.mbt            # STD3, hyphens, bidi, joiners, DNS length
       ├─ options.mbt             # IdnaOptions definition
