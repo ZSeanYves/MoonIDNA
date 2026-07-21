@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality and generated data
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Show toolchain
+        run: moon version --all
+
+      - name: Verify Unicode data
+        run: |
+          python3 tools/build_unicode_blob.py --download --check
+          python3 tools/build_idna_test_blob.py --check
+
+      - name: Verify generated interfaces and formatting
+        run: |
+          moon info
+          moon fmt
+          git diff --exit-code
+
+      - name: Check all targets
+        run: moon check --target all
+
+      - name: Verify package contents
+        run: moon package --list
+
+  test:
+    name: Test (${{ matrix.target }})
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - wasm-gc
+          - wasm
+          - js
+          - native
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Run tests
+        run: moon test --target "${{ matrix.target }}"
