@@ -1,8 +1,15 @@
 // --- 工具：检测末尾是否有 '.' ---
+
+///|
+fn decode_internal_utf8(bytes : Bytes) -> String {
+  // Callers only pass bytes encoded from a String, valid Unicode scalars, or ASCII.
+  try! @utf8.decode(bytes)
+}
+
 ///|
 fn has_trailing_dot(domain : StringView) -> Bool {
-  let s_str = domain.to_string()
-  let bs = @buf.string_to_utf8_bytes(s_str).to_array()
+  let s_str = domain.to_owned()
+  let bs = @utf8.encode(s_str).to_array()
   if bs.length() == 0 {
     return false
   }
@@ -10,12 +17,11 @@ fn has_trailing_dot(domain : StringView) -> Bool {
 }
 
 // --- 工具：将域名拆成 labels（忽略末尾的 '.'，方便处理） ---
+
 ///|
-fn split_labels(
-  domain : StringView,
-) -> Array[String] raise @buf.Utf8DecodeError {
-  let s_str = domain.to_string()
-  let bs = @buf.string_to_utf8_bytes(s_str).to_array()
+fn split_labels(domain : StringView) -> Array[String] {
+  let s_str = domain.to_owned()
+  let bs = @utf8.encode(s_str).to_array()
   let labels : Array[String] = []
   let mut current : Array[Byte] = []
   let mut limit = bs.length()
@@ -31,7 +37,7 @@ fn split_labels(
       let label_str = if current.length() == 0 {
         "".to_string()
       } else {
-        @buf.utf8_bytes_to_string(Bytes::from_array(current))
+        decode_internal_utf8(Bytes::from_array(current))
       }
       labels.push(label_str)
       current = []
@@ -41,21 +47,20 @@ fn split_labels(
     i += 1
   }
 
-  // 收尾：如果还有内容，作为最后一个 label
-  if current.length() > 0 || limit == 0 {
-    let label_str = if current.length() == 0 {
-      "".to_string()
-    } else {
-      @buf.utf8_bytes_to_string(Bytes::from_array(current))
-    }
-    labels.push(label_str)
+  // 始终保留最后一段；这能区分根点与根点前的空 label（例如 "a..").
+  let label_str = if current.length() == 0 {
+    "".to_string()
+  } else {
+    decode_internal_utf8(Bytes::from_array(current))
   }
+  labels.push(label_str)
   labels
 }
 // --- 工具：判断一个 label 是否全部 ASCII ---
+
 ///|
 fn is_all_ascii(label : String) -> Bool {
-  let bs = @buf.string_to_utf8_bytes(label).to_array()
+  let bs = @utf8.encode(label).to_array()
   let mut i = 0
   while i < bs.length() {
     let b = bs[i].to_int()
@@ -68,6 +73,8 @@ fn is_all_ascii(label : String) -> Bool {
 }
 
 // --- 工具：用 '.' 把 labels 拼回域名字符串 ---
+
+///|
 fn join_labels(labels : Array[String]) -> String {
   let mut out = "".to_string()
   let mut i = 0
@@ -81,9 +88,10 @@ fn join_labels(labels : Array[String]) -> String {
   out
 }
 // --- 工具：判断 label 是否以 xn-- 开头（不区分大小写） ---
+
 ///|
 fn is_punycode_label(label : String) -> Bool {
-  let bs = @buf.string_to_utf8_bytes(label).to_array()
+  let bs = @utf8.encode(label).to_array()
   if bs.length() < 4 {
     return false
   }
@@ -110,21 +118,22 @@ fn is_punycode_label(label : String) -> Bool {
   true
 }
 
-
 // --- 工具：取掉 xn-- 前缀后的 payload 字符串 ---
+
 ///|
-fn punycode_payload(label : String) -> String raise @buf.Utf8DecodeError {
-  let bs = @buf.string_to_utf8_bytes(label).to_array()
+fn punycode_payload(label : String) -> String {
+  let bs = @utf8.encode(label).to_array()
   let payload : Array[Byte] = []
   let mut i = 4
   while i < bs.length() {
     payload.push(bs[i])
     i += 1
   }
-  @buf.utf8_bytes_to_string(Bytes::from_array(payload))
+  decode_internal_utf8(Bytes::from_array(payload))
 }
 
 // === Bootstring 辅助函数 ===
+
 ///|
 fn threshold(k : Int, bias : Int) -> Int {
   if k <= bias + TMIN {
@@ -148,19 +157,19 @@ fn adapt(delta : Int, numpoints : Int, first_time : Bool) -> Int {
 
   d = d + d / numpoints
   let mut k : Int = 0
-  while d > ((BASE - TMIN) * TMAX) / 2 {
+  while d > (BASE - TMIN) * TMAX / 2 {
     d = d / (BASE - TMIN)
     k += BASE
   }
-  k + (((BASE - TMIN + 1) * d) / (d + SKEW))
+  k + (BASE - TMIN + 1) * d / (d + SKEW)
 }
 
 ///|
 fn encode_digit(d : Int) -> Result[Int, PunycodeError] {
   if d >= 0 && d < 26 {
-    Ok(0x61 + d)         // 'a'..'z'
+    Ok(0x61 + d) // 'a'..'z'
   } else if d >= 26 && d < 36 {
-    Ok(0x30 + (d - 26))  // '0'..'9'
+    Ok(0x30 + (d - 26)) // '0'..'9'
   } else {
     Err(PunycodeError::InvalidInput)
   }
@@ -169,21 +178,22 @@ fn encode_digit(d : Int) -> Result[Int, PunycodeError] {
 ///|
 fn decode_digit(c : Int) -> Result[Int, PunycodeError] {
   if c >= 0x30 && c <= 0x39 {
-    Ok(c - 0x30 + 26)          // '0'..'9'
+    Ok(c - 0x30 + 26) // '0'..'9'
   } else if c >= 0x41 && c <= 0x5A {
-    Ok(c - 0x41)               // 'A'..'Z'
+    Ok(c - 0x41) // 'A'..'Z'
   } else if c >= 0x61 && c <= 0x7A {
-    Ok(c - 0x61)               // 'a'..'z'
+    Ok(c - 0x61) // 'a'..'z'
   } else {
     Err(PunycodeError::InvalidInput)
   }
 }
 
 // === UTF-8 与 code point 转换 ===
+
 ///|
 fn utf8_to_codepoints(s : StringView) -> Result[Array[Int], PunycodeError] {
-  let s_str = s.to_string()
-  let bs = @buf.string_to_utf8_bytes(s_str).to_array()
+  let s_str = s.to_owned()
+  let bs = @utf8.encode(s_str).to_array()
   let cps : Array[Int] = []
   let mut i = 0
   while i < bs.length() {
@@ -250,7 +260,7 @@ fn utf8_to_codepoints(s : StringView) -> Result[Array[Int], PunycodeError] {
 }
 
 ///|
-fn codepoints_to_utf8(cps : Array[Int]) -> Result[String, PunycodeError] raise @buf.Utf8DecodeError{
+fn codepoints_to_utf8(cps : Array[Int]) -> Result[String, PunycodeError] {
   let bs : Array[Byte] = []
 
   let mut i = 0
@@ -286,46 +296,17 @@ fn codepoints_to_utf8(cps : Array[Int]) -> Result[String, PunycodeError] raise @
 }
 
 // 把 ASCII/UTF-8 字符串直接转为 bytes（UTF-8）
+
 ///|
 fn string_to_ascii_bytes(s : StringView) -> Array[Byte] {
-  let s_str = s.to_string()
-  @buf.string_to_utf8_bytes(s_str).to_array()
+  let s_str = s.to_owned()
+  @utf8.encode(s_str).to_array()
 }
-
 
 // bytes -> String（假设是合法 UTF-8）
+
 ///|
-fn bytes_to_string(bs : Array[Byte]) -> Result[String, PunycodeError] raise @buf.Utf8DecodeError {
-  let s = @buf.utf8_bytes_to_string(Bytes::from_array(bs))
+fn bytes_to_string(bs : Array[Byte]) -> Result[String, PunycodeError] {
+  let s = decode_internal_utf8(Bytes::from_array(bs))
   Ok(s)
-}
-
-// === 工具：查某个 codepoint 的 BidiClass ===
-///|
-fn bidi_class_of(cp : Int) -> BidiClass {
-  if bidi_table.length() == 0 {
-    // 没有表时，保守视为 ON
-    return BidiClass::ON
-  }
-
-  let mut left = 0
-  let mut right = bidi_table.length() - 1
-
-  while left <= right {
-    let mid = (left + right) / 2
-    let ent = bidi_table[mid]
-    if cp < ent.start {
-      if mid == 0 {
-        break
-      }
-      right = mid - 1
-    } else if cp > ent.end {
-      left = mid + 1
-    } else {
-      return ent.class
-    }
-  }
-
-  // 未命中的 codepoint，默认为 ON
-  BidiClass::ON
 }

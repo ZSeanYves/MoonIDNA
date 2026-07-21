@@ -1,6 +1,7 @@
 // === 主检查逻辑（基于 RFC 5893 简化实现） ===
 /// 检查单个 label 是否满足 IDNA Bidi 规则。
 /// 返回 true 表示通过，false 表示违反规则。
+
 ///|
 fn check_bidi_label(label : String) -> Bool {
   let chars = label.to_array()
@@ -16,18 +17,7 @@ fn check_bidi_label(label : String) -> Bool {
     classes.push(bc)
     i += 1
   }
-  let mut first_idx = 0
-  while first_idx < classes.length() {
-    match classes[first_idx] {
-      BidiClass::NSM | BidiClass::BN => first_idx += 1
-      _ => break
-    }
-  }
-  if first_idx >= classes.length() {
-    // 全是 NSM/BN，视为通过（极端情况）
-    return true
-  }
-  let first = classes[first_idx]
+  let first = classes[0]
   let is_ltr = match first {
     BidiClass::L => true
     _ => false
@@ -75,8 +65,23 @@ fn check_bidi_label(label : String) -> Bool {
         | BidiClass::CS
         | BidiClass::ET
         | BidiClass::ON
+        | BidiClass::BN
         | BidiClass::NSM => ()
-        _ => return false
+        BidiClass::R
+        | BidiClass::AL
+        | BidiClass::AN
+        | BidiClass::LRE
+        | BidiClass::LRO
+        | BidiClass::RLE
+        | BidiClass::RLO
+        | BidiClass::PDF
+        | BidiClass::LRI
+        | BidiClass::RLI
+        | BidiClass::FSI
+        | BidiClass::PDI
+        | BidiClass::S
+        | BidiClass::WS
+        | BidiClass::B => return false
       }
       j += 1
     }
@@ -102,8 +107,21 @@ fn check_bidi_label(label : String) -> Bool {
         | BidiClass::CS
         | BidiClass::ET
         | BidiClass::ON
+        | BidiClass::BN
         | BidiClass::NSM => ()
-        _ => return false
+        BidiClass::L
+        | BidiClass::LRE
+        | BidiClass::LRO
+        | BidiClass::RLE
+        | BidiClass::RLO
+        | BidiClass::PDF
+        | BidiClass::LRI
+        | BidiClass::RLI
+        | BidiClass::FSI
+        | BidiClass::PDI
+        | BidiClass::S
+        | BidiClass::WS
+        | BidiClass::B => return false
       }
       j += 1
     }
@@ -121,9 +139,28 @@ fn check_bidi_label(label : String) -> Bool {
 
 /// 针对整个域名（按 label 拆分）做 Bidi 检查：
 /// 目前策略：只要任何一个非空 label 违反规则，就认为整个域名有错误。
+
 ///|
-pub fn check_bidi_domain(labels : Array[String]) -> IdnaErrorList {
+fn check_bidi_domain(labels : Array[String]) -> IdnaErrorList {
   let errs : IdnaErrorList = []
+  let mut is_bidi_domain = false
+  for label in labels {
+    for character in label {
+      match bidi_class_of(character.to_int()) {
+        BidiClass::R | BidiClass::AL | BidiClass::AN => {
+          is_bidi_domain = true
+          break
+        }
+        _ => ()
+      }
+    }
+    if is_bidi_domain {
+      break
+    }
+  }
+  if !is_bidi_domain {
+    return errs
+  }
   let mut i = 0
   while i < labels.length() {
     let lbl = labels[i]

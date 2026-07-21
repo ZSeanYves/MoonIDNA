@@ -1,0 +1,7 @@
+import {
+  "moonbitlang/core/bench",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/encoding/utf8",
+}
+
+formatter(ignore: [ "unicode_blob.mbt", "idna_test_blob_wbtest.mbt" ])

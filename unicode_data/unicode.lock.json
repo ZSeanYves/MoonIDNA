@@ -1,0 +1,76 @@
+{
+  "blob": {
+    "bytes": 351728,
+    "composition_exclusions": 1120,
+    "composition_pairs": 961,
+    "crc32": "87e6c36b",
+    "decomposition_pages": 39,
+    "decomposition_sequences": 1982,
+    "mapping_pages": 156,
+    "mapping_scalars": 5492,
+    "mapping_sequences": 3947,
+    "property_pages": 161,
+    "sha256": "901b0b9e622cab8c0a66dddf2c6f821c47900357cd848d14feef43ae9ced047c"
+  },
+  "format": 1,
+  "page_shift": 8,
+  "sources": [
+    {
+      "bytes": 787378,
+      "path": "IdnaMappingTable.txt",
+      "sha256": "87f05505dc026fdb2bff16132bdc68a8014675836882a9a2b1844540ad3be382",
+      "url": "https://www.unicode.org/Public/17.0.0/idna/IdnaMappingTable.txt",
+      "version": "17.0.0"
+    },
+    {
+      "bytes": 173433,
+      "path": "DerivedBidiClass.txt",
+      "sha256": "4867b4b7f0731ed1bfcd34cc6251211ff1542541fce0734b6fbda139ee80b3a4",
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/extracted/DerivedBidiClass.txt",
+      "version": "17.0.0"
+    },
+    {
+      "bytes": 40635,
+      "path": "DerivedJoiningType.txt",
+      "sha256": "f39ebe974825d6736aee15582250307aa532b2cfab3caf3f86bd23fddc9c5c4d",
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/extracted/DerivedJoiningType.txt",
+      "version": "17.0.0"
+    },
+    {
+      "bytes": 2198209,
+      "path": "UnicodeData.txt",
+      "sha256": "2e1efc1dcb59c575eedf5ccae60f95229f706ee6d031835247d843c11d96470c",
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/UnicodeData.txt",
+      "version": "17.0.0"
+    },
+    {
+      "bytes": 1377582,
+      "path": "DerivedNormalizationProps.txt",
+      "sha256": "71fd6a206a2c0cdd41feb6b7f656aa31091db45e9cedc926985d718397f9e488",
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/DerivedNormalizationProps.txt",
+      "version": "17.0.0"
+    },
+    {
+      "bytes": 9007,
+      "path": "CompositionExclusions.txt",
+      "sha256": "2f239196ef3b5b61db5cc476e9bd80f534d15aa1b74e1be1dea5d042a344c85f",
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/CompositionExclusions.txt",
+      "version": "17.0.0"
+    },
+    {
+      "bytes": 208627,
+      "path": "Idna2008.txt",
+      "sha256": "e4a7526a8a37539c0defa4da25f5dbf77d0212a14d4762d455cadea608a8921c",
+      "url": "https://www.unicode.org/Public/17.0.0/idna/Idna2008.txt",
+      "version": "17.0.0"
+    },
+    {
+      "bytes": 775973,
+      "path": "IdnaTestV2.txt",
+      "sha256": "beb5d0be20e896189b03209a82fdc34f06351502bbd4b8e2523583fc2954d9cf",
+      "url": "https://www.unicode.org/Public/17.0.0/idna/IdnaTestV2.txt",
+      "version": "17.0.0"
+    }
+  ],
+  "unicode_version": "17.0.0"
+}

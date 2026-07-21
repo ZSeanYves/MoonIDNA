@@ -1,19 +1,38 @@
 // --- Punycode 常量（RFC 3492） ---
+
+///|
 const BASE : Int = 36
+
+///|
 const TMIN : Int = 1
+
+///|
 const TMAX : Int = 26
+
+///|
 const SKEW : Int = 38
+
+///|
 const DAMP : Int = 700
+
+///|
 const INITIAL_BIAS : Int = 72
-const INITIAL_N : Int = 0x80        // 128
-const DELIMITER : Int = 0x2D        // '-'
-const INT_MAX : Int = 0x7fffffff    // 简单的整型上界，用于溢出保护
+
+///|
+const INITIAL_N : Int = 0x80 // 128
+
+///|
+const DELIMITER : Int = 0x2D // '-'
+
+///|
+const INT_MAX : Int = 0x7fffffff // 简单的整型上界，用于溢出保护
 
 // === 对外 API ===
 // 把一个 Unicode label 编成 punycode label（不加 xn-- 前缀）
+
 ///|
-pub fn encode(label : StringView) -> Result[String, PunycodeError] raise @buf.Utf8DecodeError {
-// 1. UTF-8 -> code points
+fn encode(label : StringView) -> Result[String, PunycodeError] {
+  // 1. UTF-8 -> code points
   let cps_res = utf8_to_codepoints(label)
   let cps = match cps_res {
     Ok(v) => v
@@ -23,10 +42,9 @@ pub fn encode(label : StringView) -> Result[String, PunycodeError] raise @buf.Ut
   res
 }
 // 把一个 punycode label 解码成 Unicode label（不处理 xn-- 前缀）
+
 ///|
-pub fn decode(
-  label : StringView,
-) -> Result[String, PunycodeError] raise @buf.Utf8DecodeError {
+fn decode(label : StringView) -> Result[String, PunycodeError] {
   let res = match decode_to_codepoints(label) {
     Ok(v) => v
     Err(e) => return Err(e)
@@ -37,10 +55,9 @@ pub fn decode(
 
 // === 核心：编码 / 解码算法 ===
 // 内部使用：编码 code point 数组为 punycode 字符串
+
 ///|
-fn encode_codepoints(
-  cps : Array[Int],
-) -> Result[String, PunycodeError] raise @buf.Utf8DecodeError {
+fn encode_codepoints(cps : Array[Int]) -> Result[String, PunycodeError] {
   let input_len = cps.length()
   if input_len == 0 {
     return Ok("".to_string())
@@ -125,6 +142,7 @@ fn encode_codepoints(
 }
 
 // 内部使用：从 punycode 字符串解码成 code point 数组
+
 ///|
 fn decode_to_codepoints(
   label : StringView,
@@ -145,6 +163,9 @@ fn decode_to_codepoints(
     idx += 1
   }
   idx = 0
+  if last_delim == 0 {
+    return Err(PunycodeError::InvalidInput)
+  }
   if last_delim != -1 {
     while idx < last_delim {
       let bch = bytes[idx].to_int()
@@ -192,8 +213,7 @@ fn decode_to_codepoints(
     n += q
     let pos = i % out_len
     out.insert(pos, n)
-    i = pos
+    i = pos + 1
   }
   Ok(out)
 }
-

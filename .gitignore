@@ -1,4 +1,8 @@
 .DS_Store
-target/
+_build/
+.unicode-cache/
 .mooncakes/
 .moonagent/
+.repos/
+target/
+__pycache__/

@@ -1,4 +1,5 @@
 /// RFC 5892 Appendix A：ContextJ 规则总入口。
+
 ///|
 fn contextj_valid(cps : Array[Int]) -> Bool {
   let len = cps.length()
@@ -29,7 +30,7 @@ fn contextj_valid(cps : Array[Int]) -> Bool {
         return false
       }
     } else if cp == 0x200D {
-if !valid_zwj(cps, i) {
+      if !valid_zwj(cps, i) {
         return false
       }
     }
@@ -65,14 +66,13 @@ fn valid_zwnj(cps : Array[Int], idx : Int) -> Bool {
     let jt = joining_type_of(cps[pos])
     match jt {
       JoiningType::T => {
-        if pos == 0 {         return false
+        if pos == 0 {
+          return false
         }
         pos -= 1
       }
-      JoiningType::L | JoiningType::D =>
-        break
-      _ =>
-        return false
+      JoiningType::L | JoiningType::D => break
+      JoiningType::U | JoiningType::R | JoiningType::C => return false
     }
   }
 
@@ -85,19 +85,17 @@ fn valid_zwnj(cps : Array[Int], idx : Int) -> Bool {
     let jt2 = joining_type_of(cps[pos2])
     match jt2 {
       JoiningType::T => pos2 += 1
-      JoiningType::R | JoiningType::D =>
-        return true
-      _ =>
-        return false
+      JoiningType::R | JoiningType::D => return true
+      JoiningType::U | JoiningType::L | JoiningType::C => return false
     }
   }
-
 
   false
 }
 
 /// U+200D ZERO WIDTH JOINER 的上下文检查：
 /// 仅允许前一个字符是 Virama。
+
 ///|
 fn valid_zwj(cps : Array[Int], idx : Int) -> Bool {
   if cps[idx] != 0x200D {

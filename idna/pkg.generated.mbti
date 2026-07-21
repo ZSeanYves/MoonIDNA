@@ -1,0 +1,49 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "ZSeanYves/MoonIDNA/idna"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn to_ascii(StringView, use_std3_ascii_rules? : Bool, check_hyphens? : Bool, check_bidi? : Bool, check_joiners? : Bool, transitional_processing? : Bool, verify_dns_length? : Bool, ignore_invalid_punycode? : Bool) -> String raise IdnaError
+
+pub fn to_ascii_report(StringView, use_std3_ascii_rules? : Bool, check_hyphens? : Bool, check_bidi? : Bool, check_joiners? : Bool, transitional_processing? : Bool, verify_dns_length? : Bool, ignore_invalid_punycode? : Bool) -> IdnaReport
+
+#deprecated
+pub fn to_ascii_transitional(StringView) -> String
+
+pub fn to_unicode(StringView, use_std3_ascii_rules? : Bool, check_hyphens? : Bool, check_bidi? : Bool, check_joiners? : Bool, transitional_processing? : Bool, ignore_invalid_punycode? : Bool) -> String
+
+pub fn to_unicode_report(StringView, use_std3_ascii_rules? : Bool, check_hyphens? : Bool, check_bidi? : Bool, check_joiners? : Bool, transitional_processing? : Bool, ignore_invalid_punycode? : Bool) -> IdnaReport
+
+#deprecated
+pub fn to_unicode_transitional(StringView) -> String
+
+pub fn unicode_version() -> String
+
+// Errors
+pub suberror IdnaError {
+  InvalidCharacter
+  InvalidHyphenPosition
+  InvalidPunycode
+  InvalidAlabel
+  EmptyLabel
+  LeadingMark
+  DotInLabel
+  BidiError
+  JoinerError
+  LabelTooLong
+  DomainTooLong
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) struct IdnaReport {
+  output : String
+  errors : Array[IdnaError]
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+
