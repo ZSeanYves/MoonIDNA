@@ -15,12 +15,13 @@ moon add ZSeanYves/MoonIDNA
 
 ```moonbit
 import {
-  "ZSeanYves/MoonIDNA/idna" @idna,
+  "ZSeanYves/MoonIDNA/src" @idna,
 }
 ```
 
-`ZSeanYves/MoonIDNA/src` remains as a deprecated compatibility package for one
-release. New code should import `/idna`.
+The public package is `ZSeanYves/MoonIDNA/src`, imported locally as `@idna`.
+The package has no deprecated compatibility package or transitional wrapper;
+use a named `IdnaPolicy` when non-default processing is required.
 
 ## Usage
 
@@ -63,6 +64,31 @@ let strict = try! @idna.to_ascii(
 Defaults follow WHATWG lookup behavior: nontransitional processing, Bidi and
 ContextJ enabled, and STD3, hyphen, and DNS length checks disabled.
 
+For registrar-style validation, use the separate RFC 5891 profile. It enables
+IDNA2008 derived categories, ContextJ/ContextO, STD3, and DNS limits without
+changing the lookup defaults:
+
+```mbt nocheck
+let registered = try! @idna.registration_to_ascii("l·l.example")
+let report = @idna.registration_to_ascii_report("a·b.example")
+```
+
+The registration profile is checked against the complete Unicode 17
+`Idna2008.txt` corpus: all Unicode code points, all 25 CONTEXTO assignments,
+and both CONTEXTJ assignments are covered by the registration corpus tests.
+
+Reusable policies also provide fail-fast or collect behavior, per-label output
+sinks, and a display selector:
+
+```mbt nocheck
+let policy = @idna.url_policy()
+let report = @idna.to_unicode_with_policy("xn--bcher-kva.example", policy)
+let (errors, trailing_dot) = @idna.process_labels_with_policy(
+  "bücher.example.", policy, true,
+  fn(label) { println(label) },
+)
+```
+
 ## Unicode Data
 
 Runtime lookup uses a 351,728-byte Unicode 17 versioned binary Blob with
@@ -80,8 +106,7 @@ digests are pinned in `unicode_data/unicode.lock.json`. Maintainers can verify o
 regenerate the committed data with:
 
 ```bash
-python3 tools/build_unicode_blob.py --download
-python3 tools/build_unicode_blob.py --check
+python3 tools/build_unicode_blob.py --download --check
 python3 tools/build_idna_test_blob.py --check
 ```
 
@@ -103,7 +128,7 @@ moon test --target wasm-gc
 moon test --target wasm
 moon test --target js
 moon test --target native
-moon bench idna/unicode_data_bench.mbt --release --target native
+moon bench src/unicode_data_bench.mbt --release --target native
 moon info && moon fmt
 moon package --list
 ```

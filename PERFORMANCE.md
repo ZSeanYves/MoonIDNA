@@ -16,7 +16,7 @@ through the full Unicode range.
 Run the retained benchmark with:
 
 ```bash
-moon bench idna/unicode_data_bench.mbt --release --target native --no-parallelize
+moon bench src/unicode_data_bench.mbt --release --target native --no-parallelize
 ```
 
 ## Build Size
@@ -33,6 +33,6 @@ canonical-decomposition pages. Mapping sequences are interned, scalar values use
 three bytes, and no full-table decompression or entry-object initialization occurs
 at runtime.
 
-The official embed output is split into 64 KiB physical chunks so the legacy
-`wasm` backend stays below its text-segment line limit. Chunk selection is a fixed
+The official embed output is split into 64 KiB physical chunks so the `wasm`
+backend stays below its text-segment line limit. Chunk selection is a fixed
 branch and does not allocate or concatenate data at startup.

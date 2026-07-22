@@ -12,6 +12,10 @@ This is a [MoonBit](https://docs.moonbitlang.com) project.
 - In the toplevel directory, this is a `moon.mod` file listing about the
   module and some meta information.
 
+- The public package is `src/`; implementation files use lowercase,
+  responsibility-oriented names. Test files use descriptive `*_test.mbt` or
+  `*_wbtest.mbt` names and must not encode temporary phase labels.
+
 ## Coding convention
 
 - MoonBit code is organized in block style, each block is separated by `///|`,
@@ -46,6 +50,3 @@ This is a [MoonBit](https://docs.moonbitlang.com) project.
   `assert_eq` when you are in some loops where each snapshot may vary. You can
   use `moon coverage analyze > uncovered.log` to see which parts of your code
   are not covered by tests.
-
-- agent-todo.md has some small tasks that are easy for AI to pick up, agent is
-  welcome to finish the tasks and check the box when you are done

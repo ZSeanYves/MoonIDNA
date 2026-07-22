@@ -1,11 +1,10 @@
 # MoonIDNA Maintenance Status
 
-This document records the result of the 2026-07 maintenance pass and the
-remaining follow-up work.
+This document records the current implementation status and release gates.
 
 ## Completed
 
-- Migrated legacy `moon.mod.json` / `moon.pkg.json` files to current MoonBit
+- Migrated old `moon.mod.json` / `moon.pkg.json` files to current MoonBit
   manifests and set the breaking release version to 0.2.0 (Mooncakes currently
   requires pre-1.0 versions).
 - Removed `ZSeanYves/bufferutils` and `moonbitlang/x`; UTF-8 conversion now uses
@@ -20,8 +19,8 @@ remaining follow-up work.
 - Corrected mapped separators, A-label roundtrip validation, leading Mark and
   empty-label checks, conditional Bidi application, `@missing` Bidi defaults,
   and textual DNS limits.
-- Moved the supported API to `ZSeanYves/MoonIDNA/idna`. The `/src` package is a
-  deprecated compatibility wrapper.
+- The supported API is located at `ZSeanYves/MoonIDNA/src`, matching the
+  canonical MoonBit package layout.
 - Removed public mapping/Bidi/Joining tables, options internals, Punycode helpers,
   and validators from the generated interface.
 - Deleted committed `src/data` inputs and `src/tools` table emitters. The new
@@ -37,6 +36,9 @@ remaining follow-up work.
 - Removed the generator's dependency on Python `unicodedata`; NFC composition
   pairs now come deterministically from `UnicodeData.txt` and
   `Full_Composition_Exclusion`.
+- Completed pre-release hardening: RFC-style malformed Punycode and DNS
+  boundary regressions, a separate strict registration profile with ContextO,
+  and reusable policy, error, label-sink, display, and differential APIs.
 
 ## Data Format
 
@@ -56,23 +58,19 @@ Normal dependency builds do not run generators. Both the binary and generated
 MoonBit embed are committed; the binary is excluded from Mooncakes publication
 because the embed is sufficient at runtime.
 
-## Remaining Work
+## Current Scope
 
-### Registration profile and ContextO
+The public flags implement the UTS #46 application processing surface. The
+separate `IdnaProfile::Registration` API applies the complete Unicode 17
+`Idna2008.txt` derived-property corpus, NFC enforcement, ContextJ, ContextO,
+STD3, Bidi, and DNS limits without changing WHATWG lookup defaults. The
+registration white-box corpus test covers all 1,114,112 Unicode code points,
+all 25 CONTEXTO assignments, and both CONTEXTJ assignments.
 
-The public flags implement the UTS #46 application processing surface. A strict
-RFC 5891 registration profile is not yet exposed. IDNA2008 derived categories
-are embedded in the Blob, but the registration API and ContextO rules should be
-implemented as a separate surface rather than changing WHATWG lookup defaults.
-
-### Punycode implementation
-
-The existing RFC 3492 implementation is now private and covered by RFC-style
-vectors, supplementary-plane tests, and the full IDNA suite. The official suite
-found and fixed its insertion-index and delimiter edge cases, but it remains
-locally maintained. Re-evaluate
-`tonyfettes/punycode` when its Unicode stack and error semantics are compatible;
-do not add an older transitive Unicode dataset merely to remove this code.
+The RFC 3492 implementation remains private and is covered by malformed-input,
+overflow, supplementary-plane, and full `IdnaTestV2` tests. The package no
+longer exposes deprecated transitional wrapper functions; callers use the
+named policy API instead.
 
 ## Rust Comparison
 
@@ -82,16 +80,15 @@ and compact direct Unicode lookup. It intentionally does not copy Rust's ICU4X
 backend because MoonBit does not currently expose an equivalent portable Unicode
 provider across wasm-gc, wasm, JS, and native.
 
-The remaining test improvements should follow Rust's strategy: expand bad
-Punycode corpora and add differential tests. Full `IdnaTestV2` and DNS boundary
-matrices are already release gates. Replacing the whole module with
-`tonyfettes/idna` is still not appropriate because its current API omits required
-flags and its released Unicode version differs.
+The public policy API includes reusable profiles, fail-fast/collect error
+behavior, a label sink, a display selector, and compatibility vectors that
+compare the policy path with the convenience API. The compact Blob backend is
+kept deliberately portable across wasm-gc, wasm, JS, and native targets.
 
 ## Release Gate
 
-The current build satisfies the core release gates below; repeat them before
-publishing:
+The current build satisfies all release gates, including the complete
+registration corpus scan and DNS boundary matrix.
 
 1. Mapping, Bidi, Joining, UCD, normalization, and tests all pinned to Unicode
    17.0.0.
@@ -101,6 +98,8 @@ publishing:
 5. Both `build_unicode_blob.py --check` and `build_idna_test_blob.py --check`,
    with reviewed lock hashes.
 6. `moon info && moon fmt` with only the intended public API in `.mbti`.
+7. Unicode 17 `Idna2008.txt` category counts and all contextual assignments
+   validated by the registration corpus tests.
 
 ## References
 
@@ -111,4 +110,3 @@ publishing:
 - [RFC 5891](https://datatracker.ietf.org/doc/html/rfc5891)
 - [RFC 5893](https://datatracker.ietf.org/doc/html/rfc5893)
 - [Rust idna](https://docs.rs/idna/latest/idna/)
-- [tonyfettes/unicode](https://github.com/moonbit-community/tonyfettes-unicode)
