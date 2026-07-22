@@ -23,9 +23,9 @@ This document records the current implementation status and release gates.
   canonical MoonBit package layout.
 - Removed public mapping/Bidi/Joining tables, options internals, Punycode helpers,
   and validators from the generated interface.
-- Deleted committed `src/data` inputs and `src/tools` table emitters. The new
+- Deleted committed `src/data` inputs and `src/tools` table emitters. The
   maintainer tool creates a versioned, checksummed Blob using two-stage
-  deduplicated page tables and official `moon tool embed` output.
+  deduplicated page tables and a deterministic compact `Bytes` emitter.
 - Added functional, error, NFC, property, and performance tests. All supported
   backends are part of the final validation matrix.
 - Synchronized every Unicode input to 17.0.0: mapping, Bidi, Joining, UCD,
@@ -57,6 +57,10 @@ records a SHA-256 for the complete Blob.
 Normal dependency builds do not run generators. Both the binary and generated
 MoonBit embed are committed; the binary is excluded from Mooncakes publication
 because the embed is sufficient at runtime.
+
+The generated source uses compact decimal byte literals in 64 KiB chunks. This
+retains MoonBit's optimized `Bytes` literal compilation while avoiding the text
+inflation of the default hexadecimal embed output.
 
 ## Current Scope
 

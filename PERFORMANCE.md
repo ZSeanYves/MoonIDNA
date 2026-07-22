@@ -27,12 +27,28 @@ moon bench src/unicode_data_bench.mbt --release --target native --no-parallelize
 | Committed raw Unicode text | about 3.28 MB | 0 B | removed |
 | Runtime Unicode binary | object arrays | 351,728 B | direct Blob |
 
+## Embedded Source Size
+
+The binary format and runtime memory did not change. Only the generated MoonBit
+source representation was replaced with compact decimal `Bytes` literals.
+
+| Artifact | Default hex embed | Compact byte embed | Change |
+|---|---:|---:|---:|
+| `src/unicode_blob.mbt` | 2,170,064 B | 835,605 B | -61.5% |
+| Mooncakes package zip | 134,520 B | 123,285 B | -8.4% |
+| Runtime Unicode Blob | 351,728 B | 351,728 B | unchanged |
+
+Native lookup remained within the existing benchmark range: 145.68 us before
+and 143.77 us after. A clean native `moon check` changed from 0.89 s to 0.85 s;
+these small timing differences should be treated as noise, not a claimed runtime
+speedup.
+
 The logical Unicode range contains 4,352 pages of 256 codepoints. Page
 deduplication leaves 156 mapping pages, 161 combined-property pages, and 39
 canonical-decomposition pages. Mapping sequences are interned, scalar values use
 three bytes, and no full-table decompression or entry-object initialization occurs
 at runtime.
 
-The official embed output is split into 64 KiB physical chunks so the `wasm`
-backend stays below its text-segment line limit. Chunk selection is a fixed
-branch and does not allocate or concatenate data at startup.
+The compact embed is split into 64 KiB physical chunks so the `wasm` backend
+stays below its text-segment line limit. Chunk selection is a fixed branch and
+does not allocate or concatenate data at startup.
