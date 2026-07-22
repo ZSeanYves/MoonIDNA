@@ -12,9 +12,7 @@ fn check_std3(label : String, opts : IdnaOptions) -> IdnaErrorList {
   while i < bs.length() {
     let b = bs[i].to_int()
     // 必须是 ASCII
-    if b < 0 || b > 0x7F {
-      errs.push(IdnaError::InvalidCharacter)
-    } else {
+    if b <= 0x7F {
       // STD3: 只允许 a-z, 0-9, '-'
       let is_digit = b >= 0x30 && b <= 0x39
       let is_lower = b >= 0x61 && b <= 0x7A
@@ -83,7 +81,7 @@ fn check_dns_length(domain : String, opts : IdnaOptions) -> IdnaErrorList {
   while i < bs.length() {
     let b = bs[i].to_int()
     if b == 0x2E { // '.'
-      if current_len == 0 {
+      if current_len == 0 && i + 1 < bs.length() {
         errs.push(IdnaError::EmptyLabel)
       }
       if current_len > 63 {
@@ -96,7 +94,7 @@ fn check_dns_length(domain : String, opts : IdnaOptions) -> IdnaErrorList {
     i += 1
   }
   // 最后一个 label
-  if current_len == 0 {
+  if current_len == 0 && !has_trailing_dot(domain) {
     errs.push(IdnaError::EmptyLabel)
   }
   if current_len > 63 {
@@ -134,6 +132,33 @@ fn check_joiners(label : String, opts : IdnaOptions) -> IdnaErrorList {
 }
 
 ///|
+/// Validate IDNA2008 derived properties and CONTEXTO for registration.
+fn check_registration(label : String, opts : IdnaOptions) -> IdnaErrorList {
+  let errors : IdnaErrorList = []
+  if opts._profile != IdnaProfile::Registration {
+    return errors
+  }
+  let cps = label.to_array().map(fn(c) { c.to_int() })
+  for cp in cps {
+    match idna2008_category_of(cp) {
+      Idna2008Category::Pvalid => ()
+      Idna2008Category::Contextj => ()
+      Idna2008Category::Contexto => ()
+      Idna2008Category::Unassigned =>
+        errors.push(IdnaError::UnassignedCodePoint)
+      Idna2008Category::Disallowed => errors.push(IdnaError::RegistrationError)
+    }
+  }
+  if !contextj_valid(cps) {
+    errors.push(IdnaError::JoinerError)
+  }
+  if !contexto_valid(cps) {
+    errors.push(IdnaError::ContextOError)
+  }
+  errors
+}
+
+///|
 fn check_basic_validity(label : String, opts : IdnaOptions) -> IdnaErrorList {
   let errors : IdnaErrorList = []
   if label.length() == 0 {
@@ -159,7 +184,17 @@ fn check_basic_validity(label : String, opts : IdnaOptions) -> IdnaErrorList {
 fn check_mapping_validity(label : String, opts : IdnaOptions) -> IdnaErrorList {
   let errors : IdnaErrorList = []
   for character in label {
-    match mapping_status_of(mapping_token_of(character.to_int())) {
+    let cp = character.to_int()
+    if opts._profile == IdnaProfile::Registration {
+      match idna2008_category_of(cp) {
+        Idna2008Category::Pvalid
+        | Idna2008Category::Contextj
+        | Idna2008Category::Contexto => continue
+        Idna2008Category::Disallowed | Idna2008Category::Unassigned =>
+          errors.push(IdnaError::InvalidCharacter)
+      }
+    }
+    match mapping_status_of(mapping_token_of(cp)) {
       MappingStatus::Valid | MappingStatus::Deviation => ()
       MappingStatus::DisallowedStd3Valid =>
         if opts._use_std3_ascii_rules {
@@ -208,6 +243,11 @@ fn validate_label_all(label : String, opts : IdnaOptions) -> IdnaErrorList {
   while m < e4.length() {
     all.push(e4[m])
     m += 1
+  }
+
+  let e5 = check_registration(label, opts)
+  for error in e5 {
+    all.push(error)
   }
 
   all

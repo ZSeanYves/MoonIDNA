@@ -27,6 +27,13 @@ const DELIMITER : Int = 0x2D // '-'
 ///|
 const INT_MAX : Int = 0x7fffffff // 简单的整型上界，用于溢出保护
 
+// Punycode is quadratic in the worst case. Keep a bounded payload even when
+// DNS length verification is disabled, so malformed input cannot consume
+// unbounded CPU or memory.
+
+///|
+const MAX_PUNYCODE_INPUT : Int = 4096
+
 // === 对外 API ===
 // 把一个 Unicode label 编成 punycode label（不加 xn-- 前缀）
 
@@ -148,6 +155,9 @@ fn decode_to_codepoints(
   label : StringView,
 ) -> Result[Array[Int], PunycodeError] {
   let bytes = string_to_ascii_bytes(label)
+  if bytes.length() > MAX_PUNYCODE_INPUT {
+    return Err(PunycodeError::Overflow)
+  }
   let out : Array[Int] = []
   let mut n : Int = INITIAL_N
   let mut i : Int = 0

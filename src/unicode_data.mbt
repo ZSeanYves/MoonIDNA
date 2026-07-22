@@ -49,6 +49,15 @@ priv enum JoiningType {
 }
 
 ///|
+priv enum Idna2008Category {
+  Pvalid
+  Contextj
+  Contexto
+  Disallowed
+  Unassigned
+}
+
+///|
 fn blob_u16(offset : Int) -> Int {
   (unicode_data_byte_at(offset).to_int() & 0xFF) |
   ((unicode_data_byte_at(offset + 1).to_int() & 0xFF) << 8)
@@ -254,4 +263,16 @@ fn is_virama(codepoint : Int) -> Bool {
 ///|
 fn is_mark(codepoint : Int) -> Bool {
   (property_token_of(codepoint) & (1 << 17)) != 0
+}
+
+///|
+/// Read the IDNA2008 derived category stored in the compact property token.
+fn idna2008_category_of(codepoint : Int) -> Idna2008Category {
+  match (property_token_of(codepoint) >> 18) & 0x7 {
+    0 => Idna2008Category::Pvalid
+    1 => Idna2008Category::Contextj
+    2 => Idna2008Category::Contexto
+    3 => Idna2008Category::Disallowed
+    _ => Idna2008Category::Unassigned
+  }
 }

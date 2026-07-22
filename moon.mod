@@ -18,8 +18,8 @@ options(
   exclude: [
     "unicode_data/unicode_data.bin",
     "unicode_data/idna_test_v2.bin",
-    "idna/idna_test_blob_wbtest.mbt",
-    "idna/idna_test_v2_wbtest.mbt",
+    "src/idna_test_blob_wbtest.mbt",
+    "src/idna_test_v2_wbtest.mbt",
     "tools/__pycache__/**",
   ],
 )

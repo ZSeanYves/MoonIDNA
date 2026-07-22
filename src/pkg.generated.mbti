@@ -1,22 +1,94 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "ZSeanYves/MoonIDNA/src"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
-#deprecated
-pub fn to_ascii(StringView) -> String
+pub fn lookup_policy() -> IdnaPolicy
 
-#deprecated
-pub fn to_ascii_transitional(StringView) -> String
+pub fn process_domain_with_policy(StringView, IdnaPolicy, Bool) -> IdnaReport
 
-#deprecated
-pub fn to_unicode(StringView) -> String
+pub fn process_labels_with_policy(StringView, IdnaPolicy, Bool, (String) -> Unit) -> (Array[IdnaError], Bool)
 
-#deprecated
-pub fn to_unicode_transitional(StringView) -> String
+pub fn registration_policy() -> IdnaPolicy
+
+pub fn registration_to_ascii(StringView) -> String raise IdnaError
+
+pub fn registration_to_ascii_report(StringView) -> IdnaReport
+
+pub fn std3_policy() -> IdnaPolicy
+
+pub fn to_ascii(StringView, use_std3_ascii_rules? : Bool, check_hyphens? : Bool, check_bidi? : Bool, check_joiners? : Bool, transitional_processing? : Bool, verify_dns_length? : Bool, ignore_invalid_punycode? : Bool) -> String raise IdnaError
+
+pub fn to_ascii_report(StringView, use_std3_ascii_rules? : Bool, check_hyphens? : Bool, check_bidi? : Bool, check_joiners? : Bool, transitional_processing? : Bool, verify_dns_length? : Bool, ignore_invalid_punycode? : Bool) -> IdnaReport
+
+pub fn to_ascii_with_policy(StringView, IdnaPolicy) -> String raise IdnaError
+
+pub fn to_display_with_policy(StringView, IdnaPolicy, (String, String) -> DisplayPreference) -> IdnaReport
+
+pub fn to_unicode(StringView, use_std3_ascii_rules? : Bool, check_hyphens? : Bool, check_bidi? : Bool, check_joiners? : Bool, transitional_processing? : Bool, ignore_invalid_punycode? : Bool) -> String
+
+pub fn to_unicode_report(StringView, use_std3_ascii_rules? : Bool, check_hyphens? : Bool, check_bidi? : Bool, check_joiners? : Bool, transitional_processing? : Bool, ignore_invalid_punycode? : Bool) -> IdnaReport
+
+pub fn to_unicode_with_policy(StringView, IdnaPolicy) -> IdnaReport
+
+pub fn unicode_version() -> String
+
+pub fn url_policy() -> IdnaPolicy
 
 // Errors
+pub suberror IdnaError {
+  InvalidCharacter
+  InvalidHyphenPosition
+  InvalidPunycode
+  InvalidAlabel
+  EmptyLabel
+  LeadingMark
+  DotInLabel
+  BidiError
+  JoinerError
+  ContextOError
+  UnassignedCodePoint
+  RegistrationError
+  LabelTooLong
+  DomainTooLong
+} derive(Eq, @debug.Debug)
 
 // Types and methods
+pub(all) enum DisplayPreference {
+  Unicode
+  Ascii
+} derive(Eq, @debug.Debug)
+
+pub(all) enum ErrorPolicy {
+  FailFast
+  Collect
+} derive(Eq, @debug.Debug)
+
+pub(all) struct IdnaPolicy {
+  profile : IdnaProfile
+  error_policy : ErrorPolicy
+  transitional_processing : Bool
+  check_bidi : Bool
+  check_joiners : Bool
+  verify_dns_length : Bool
+  ignore_invalid_punycode : Bool
+} derive(Eq, @debug.Debug)
+pub fn IdnaPolicy::with_error_policy(Self, ErrorPolicy) -> Self
+
+pub(all) enum IdnaProfile {
+  Lookup
+  Url
+  Std3
+  Registration
+} derive(Eq, @debug.Debug)
+
+pub(all) struct IdnaReport {
+  output : String
+  errors : Array[IdnaError]
+} derive(Eq, @debug.Debug)
 
 // Type aliases
 

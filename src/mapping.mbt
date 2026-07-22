@@ -27,6 +27,24 @@ fn append_mapped_codepoint(
     errs.push(IdnaError::InvalidCharacter)
     return
   }
+  // RFC 5891 registration processes NFC input without UTS #46 compatibility
+  // mappings. Keep every scalar in place and validate its derived category.
+  if opts._profile == IdnaProfile::Registration {
+    match idna2008_category_of(cp) {
+      Idna2008Category::Pvalid
+      | Idna2008Category::Contextj
+      | Idna2008Category::Contexto => out_chars.push(Int::unsafe_to_char(cp))
+      Idna2008Category::Disallowed => {
+        errs.push(IdnaError::RegistrationError)
+        out_chars.push(Int::unsafe_to_char(cp))
+      }
+      Idna2008Category::Unassigned => {
+        errs.push(IdnaError::UnassignedCodePoint)
+        out_chars.push(Int::unsafe_to_char(cp))
+      }
+    }
+    return
+  }
   let token = mapping_token_of(cp)
   let status = mapping_status_of(token)
   let descriptor = mapping_descriptor_of(token)

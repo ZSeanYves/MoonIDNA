@@ -165,7 +165,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=ROOT / ".unicode-cache" / "17.0.0" / "IdnaTestV2.txt")
     parser.add_argument("--binary", type=Path, default=ROOT / "unicode_data" / "idna_test_v2.bin")
-    parser.add_argument("--embed", type=Path, default=ROOT / "idna" / "idna_test_blob_wbtest.mbt")
+    parser.add_argument("--embed", type=Path, default=ROOT / "src" / "idna_test_blob_wbtest.mbt")
     parser.add_argument("--metadata", type=Path, default=ROOT / "unicode_data" / "idna_test_v2.json")
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()

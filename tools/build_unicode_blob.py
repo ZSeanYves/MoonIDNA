@@ -548,7 +548,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-dir", type=Path, default=ROOT / ".unicode-cache" / "17.0.0")
     parser.add_argument("--binary", type=Path, default=ROOT / "unicode_data" / "unicode_data.bin")
-    parser.add_argument("--embed", type=Path, default=ROOT / "idna" / "unicode_blob.mbt")
+    parser.add_argument("--embed", type=Path, default=ROOT / "src" / "unicode_blob.mbt")
     parser.add_argument("--lock", type=Path, default=ROOT / "unicode_data" / "unicode.lock.json")
     parser.add_argument("--check", action="store_true", help="fail if committed outputs are not reproducible")
     parser.add_argument("--download", action="store_true", help="download missing inputs using the pinned lock file")
