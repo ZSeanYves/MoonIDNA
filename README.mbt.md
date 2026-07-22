@@ -3,10 +3,6 @@
 MoonIDNA implements UTS #46 ToASCII and ToUnicode for MoonBit, including NFC,
 Punycode, Bidi, ContextJ, STD3, hyphen, and DNS length checks.
 
-The maintained package uses only official MoonBit core libraries. The former
-`ZSeanYves/bufferutils` dependency and the generated object tables have been
-removed.
-
 ## Installation
 
 ```bash
