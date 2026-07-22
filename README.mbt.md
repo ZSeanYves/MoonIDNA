@@ -1,7 +1,10 @@
 # MoonIDNA
 
-MoonIDNA implements UTS #46 ToASCII and ToUnicode for MoonBit, including NFC,
-Punycode, Bidi, ContextJ, STD3, hyphen, and DNS length checks.
+**MoonIDNA supports Unicode 17.0.0.**
+
+It provides UTS #46 ToASCII and ToUnicode plus a strict IDNA2008 registration
+profile for MoonBit, including NFC, Punycode, Bidi, ContextJ, ContextO, STD3,
+hyphen, and DNS length checks.
 
 ## Installation
 
@@ -92,6 +95,10 @@ deduplicated 256-codepoint pages. It contains UTS #46 mappings,
 Bidi/Joining/CCC/Mark/Virama properties, canonical decompositions, and NFC
 composition pairs. Lookups do not construct entry objects or decompress the
 entire table at startup.
+
+The committed `unicode_blob.mbt` uses compact decimal `Bytes` chunks. Its source
+representation is 835,605 bytes, while the runtime Blob, offsets, CRC32, and
+SHA-256 remain unchanged. Consumers do not perform decompression or generation.
 
 The data version is embedded in the Blob and available as
 `@idna.unicode_version()`. Generation fails if any input belongs to a different
